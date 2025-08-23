@@ -2,137 +2,155 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Monthly Attendance Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professional Attendance Calculator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #89f7fe, #66a6ff);
+      margin: 0;
+      padding: 0;
       text-align: center;
-      padding: 30px;
-      animation: fadeIn 1s ease-in-out;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      color: #333;
+      animation: fadeIn 1s ease-in;
     }
-    h2 {
-      color: #222;
-      animation: slideIn 1s ease-in-out;
-    }
-    label {
+    header {
+      padding: 20px;
+      background: #333;
+      color: white;
+      font-size: 22px;
       font-weight: bold;
-      display: block;
-      margin-top: 15px;
+      animation: slideDown 0.8s ease-in-out;
     }
-    select, input {
+    main {
+      padding: 20px;
+    }
+    select, input, button {
+      margin: 10px;
       padding: 8px;
-      margin-top: 5px;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      border: 1px solid #555;
     }
     button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      background-color: #007bff;
+      background: #333;
       color: white;
-      font-size: 16px;
       cursor: pointer;
       transition: 0.3s;
     }
     button:hover {
-      background-color: #0056b3;
-      transform: scale(1.05);
+      background: #555;
     }
     .result {
-      margin-top: 25px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #333;
-      animation: fadeIn 1s ease-in-out;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 12px;
+      background: white;
+      display: inline-block;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      animation: popUp 0.5s ease-in-out;
     }
     footer {
-      margin-top: 40px;
+      margin-top: 30px;
+      padding: 10px;
+      background: #222;
+      color: white;
       font-size: 14px;
-      color: #222;
     }
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {opacity: 0;}
+      to {opacity: 1;}
     }
-    @keyframes slideIn {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+    @keyframes slideDown {
+      from {transform: translateY(-100%);}
+      to {transform: translateY(0);}
+    }
+    @keyframes popUp {
+      from {transform: scale(0.8); opacity: 0;}
+      to {transform: scale(1); opacity: 1;}
     }
   </style>
 </head>
 <body>
-  <h2>Monthly Attendance Calculator</h2>
+  <header>Professional Attendance Calculator</header>
+  <main>
+    <p>Select a month, mark Saturdays if working, and enter absent days:</p>
 
-  <label for="month">Select Month:</label>
-  <select id="month">
-    <option value="1">January</option>
-    <option value="2">February</option>
-    <option value="3">March</option>
-    <option value="4">April</option>
-    <option value="5">May</option>
-    <option value="6">June</option>
-    <option value="7">July</option>
-    <option value="8">August</option>
-    <option value="9">September</option>
-    <option value="10">October</option>
-    <option value="11">November</option>
-    <option value="12">December</option>
-  </select>
+    <label for="month">Choose Month:</label>
+    <select id="month">
+      <option value="0">January</option>
+      <option value="1">February</option>
+      <option value="2">March</option>
+      <option value="3">April</option>
+      <option value="4">May</option>
+      <option value="5">June</option>
+      <option value="6">July</option>
+      <option value="7">August</option>
+      <option value="8">September</option>
+      <option value="9">October</option>
+      <option value="10">November</option>
+      <option value="11">December</option>
+    </select>
+    <br>
 
-  <label><input type="checkbox" id="sat1"> Include 1st Saturday</label>
-  <label><input type="checkbox" id="sat2"> Include 2nd Saturday</label>
-  <label><input type="checkbox" id="sat3"> Include 3rd Saturday</label>
-  <label><input type="checkbox" id="sat4"> Include 4th Saturday</label>
+    <label>Saturdays (tick if working):</label><br>
+    <input type="checkbox" id="sat1"> 1st Saturday
+    <input type="checkbox" id="sat2"> 2nd Saturday
+    <input type="checkbox" id="sat3"> 3rd Saturday
+    <input type="checkbox" id="sat4"> 4th Saturday
+    <br>
 
-  <label for="absent">Number of days absent:</label>
-  <input type="number" id="absent" placeholder="Enter absent days">
+    <label for="absent">Absent Days:</label>
+    <input type="number" id="absent" min="0" value="0">
+    <br>
 
-  <button onclick="calculateAttendance()">Calculate Attendance</button>
+    <button onclick="calculateAttendance()">Calculate Attendance</button>
 
-  <div class="result" id="result"></div>
+    <div id="output" class="result"></div>
+  </main>
 
-  <footer>© 2025 Shaik Shabbir</footer>
+  <footer>
+    &copy; 2025 Shaik Shabbir | All Rights Reserved
+  </footer>
 
   <script>
     function calculateAttendance() {
       const month = parseInt(document.getElementById("month").value);
       const year = new Date().getFullYear();
-      const absent = parseInt(document.getElementById("absent").value) || 0;
+      const absent = parseInt(document.getElementById("absent").value);
 
-      // ✅ Calculate total days in selected month
-      const totalDays = new Date(year, month, 0).getDate();
+      // Get total days in month
+      const totalDays = new Date(year, month + 1, 0).getDate();
 
-      let workingDays = 0;
-
-      // Loop through all days in month
-      for (let day = 1; day <= totalDays; day++) {
-        const date = new Date(year, month - 1, day);
-        const weekday = date.getDay(); // 0 = Sunday, 6 = Saturday
-
-        if (weekday !== 0) { // Exclude Sundays
-          if (weekday === 6) {
-            // Handle Saturdays with checkboxes
-            const satIndex = Math.floor((day - 1) / 7) + 1;
-            if (document.getElementById("sat" + satIndex)?.checked) {
-              workingDays++;
-            }
-          } else {
-            workingDays++;
-          }
-        }
+      // Count Sundays
+      let sundays = 0;
+      for (let d = 1; d <= totalDays; d++) {
+        let day = new Date(year, month, d).getDay();
+        if (day === 0) sundays++;
       }
 
-      const present = workingDays - absent;
-      const percentage = workingDays > 0 ? ((present / workingDays) * 100).toFixed(2) : 0;
+      // Saturdays (checked ones count as working days)
+      let saturdays = 0;
+      if (document.getElementById("sat1").checked) saturdays++;
+      if (document.getElementById("sat2").checked) saturdays++;
+      if (document.getElementById("sat3").checked) saturdays++;
+      if (document.getElementById("sat4").checked) saturdays++;
 
-      document.getElementById("result").innerHTML = `
-        Total working days: ${workingDays}<br>
-        Days absent: ${absent}<br>
-        Days present: ${present}<br>
-        Attendance Percentage: ${percentage}%
+      // Working days (exclude Sundays, add selected Saturdays)
+      let workingDays = totalDays - sundays + saturdays;
+
+      // Present days
+      let presentDays = workingDays - absent;
+      if (presentDays < 0) presentDays = 0;
+
+      // Percentage
+      let percentage = ((presentDays / workingDays) * 100).toFixed(2);
+
+      document.getElementById("output").innerHTML = `
+        <p><b>Total Days in Month:</b> ${totalDays}</p>
+        <p><b>Total Working Days (excl. Sundays + selected Saturdays):</b> ${workingDays}</p>
+        <p><b>Absent Days:</b> ${absent}</p>
+        <p><b>Present Days:</b> ${presentDays}</p>
+        <p><b>Attendance Percentage:</b> ${percentage}%</p>
       `;
     }
   </script>
