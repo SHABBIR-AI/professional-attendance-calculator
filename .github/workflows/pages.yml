@@ -1,0 +1,75 @@
+name: Validate and deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate static site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check the site entry point
+        shell: bash
+        run: |
+          test -s index.html
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const required = [
+            /<!doctype html>/i,
+            /<title>[^<]+<\/title>/i,
+            /<main\b|<body\b/i,
+            /id=["']month["']/i,
+            /id=["']absent["']/i,
+            /calculateAttendance\s*\(/,
+          ];
+
+          const missing = required
+            .map((pattern, index) => (pattern.test(html) ? null : index + 1))
+            .filter(Boolean);
+
+          if (missing.length) {
+            throw new Error(`index.html is missing required site content (checks: ${missing.join(', ')}).`);
+          }
+          NODE
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: validate
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5
